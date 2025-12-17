@@ -45,6 +45,35 @@ class MessageRepo:
                 self.messages.append(message_obj)
         spinner.stop(str(self))
 
+        self.indices = list(range(len(self.messages)))
+        self._filters = []
+
+    def get_visible(self, limit=None):
+        indices = self.indices[:limit] if limit else self.indices
+        return [self.messages[i] for i in indices]
+    
+    def filter(self, predicate, label=None):
+        self.indices = [
+            msg for msg in self.indices
+            if predicate(self.messages[msg])
+        ]
+        if label:
+            self._filters.append(label)
+        return self
+
+    def filterAfterTimestamp(self, timestamp):
+        self.filter(lambda msg: msg.timestamp > datetime.fromisoformat(timestamp), {"after": timestamp})
+        return self
+
+    def filterBeforeTimestamp(self, timestamp):
+        self.filter(lambda msg: msg.timestamp < datetime.fromisoformat(timestamp), {"before": timestamp})
+        return self
+
+    def reset(self):
+        self.indices = list(range(len(self.messages)))
+        self._filters = []
+        return self
+
     def __repr__(self):
         return f"<MessageRepo - Message Repository containing {len(self.messages)} messages in {len(self.channels)} channels>"
 
