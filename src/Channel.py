@@ -1,5 +1,5 @@
 from enum import Enum
-from Config import Config
+from src.Config import Config
 
 class Channel:
     class Type(Enum):

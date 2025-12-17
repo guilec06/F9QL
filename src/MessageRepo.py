@@ -1,9 +1,9 @@
 import json
 import os
 from datetime import datetime
-from Config import Config
-from Channel import Channel
-from Spinner import Spinner
+from src.Config import Config
+from src.Channel import Channel
+from src.Spinner import Spinner
 
 
 class Message:

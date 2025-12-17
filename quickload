@@ -1,10 +1,10 @@
 #/usr/bin/env python3
 
-from MessageRepo import MessageRepo
-from Config import Config
+from src.MessageRepo import MessageRepo
+from src.Config import Config
 
 if __name__ == "__main__":
-    Config.init("discord_data", "fr")
+    Config.init(lang="fr")
 
     print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
     repo = MessageRepo(Config.MESSAGES)
