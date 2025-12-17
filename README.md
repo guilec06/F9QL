@@ -147,7 +147,7 @@ Contributions are welcome! We appreciate any help to improve F9QL.
 We especially encourage contributions of new locale files to support Discord data exports in different languages. To add a new locale:
 
 1. Create a new JSON file in the `locale/` directory using ISO 639-1 language codes (e.g., `de.json` for German, `es.json` for Spanish, `ja.json` for Japanese)
-2. Map the folder names as they appear in Discord data exports for that language (refer to [Discord's official data package structure documentation](https://support.discord.com/hc/en-us/articles/360004957991-Your-Discord-Data-Package#h_01K2Z1F0GK1Z3C7YF0MMS8ND4B) to see folder names in your language):
+2. Map the folder names as they appear in Discord data exports for that language (refer to [Discord's official data package structure documentation](https://support.discord.com/hc/en-us/articles/360004957991-Your-Discord-Data-Package) to see folder names in your language):
 ```json
 {
     "activities": "Activities",
