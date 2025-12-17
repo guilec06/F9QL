@@ -150,13 +150,13 @@ We especially encourage contributions of new locale files to support Discord dat
 2. Map the folder names as they appear in Discord data exports for that language (refer to [Discord's official data package structure documentation](https://support.discord.com/hc/en-us/articles/360004957991-Your-Discord-Data-Package#h_01K2Z1F0GK1Z3C7YF0MMS8ND4B) to see folder names in your language):
 ```json
 {
-    "activities": "Aktivitäten",
-    "activity": "Aktivität",
-    "account": "Konto",
-    "support": "Support-Anfragen",
-    "messages": "Nachrichten",
-    "ads": "Werbung",
-    "guilds": "Server"
+    "activities": "Activities",
+    "activity": "Activity",
+    "account": "Account",
+    "support": "Support Tickets",
+    "messages": "Messages",
+    "ads": "Ads",
+    "guilds": "Servers"
 }
 ```
 3. Test the locale with an actual Discord data export in that language
