@@ -1,0 +1,116 @@
+# Commit Policy
+
+## Purpose
+
+This policy defines the rules for commits in the repository to ensure:
+
+- A **clear and consistent Git history**
+- Smooth **continuous integration**
+- Better **traceability** of changes
+
+---
+
+## Commit Message Structure
+
+Each commit message should follow this format:
+
+```
+<type>(<scope>): <short description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Example:**
+
+```
+feat(auth): add Google OAuth2 login
+
+Implemented Google authentication module for users.
+Updated related dependencies and added unit tests.
+
+BREAKING CHANGE: changed User model structure.
+```
+
+---
+
+## Commit Types
+
+| Type         | Description                                               |
+| ------------ | --------------------------------------------------------- |
+| **feat**     | Adding a new feature                                      |
+| **fix**      | Bug fix                                                   |
+| **remove**   | Removing a feature or code                                |
+| **move**     | Moving a feature or code                                  |
+| **docs**     | Documentation changes or additions                        |
+| **style**    | Formatting changes without affecting code logic           |
+| **refactor** | Code restructuring without adding features or fixing bugs |
+| **perf**     | Performance improvements                                  |
+| **test**     | Adding or modifying tests                                 |
+| **build**    | Changes related to build system or dependencies           |
+| **ci**       | Changes related to continuous integration                 |
+| **chore**    | Other changes without affecting application logic         |
+| **merge**    | Merge commits                                             |
+
+---
+
+## Scope
+
+The **scope** specifies the part of the project affected (optional but recommended).
+Examples: `api`, `ui`, `auth`, `database`, `router`, `styles`, `docs`.
+
+**Example:**
+
+```
+fix(api): fix pagination issue
+```
+
+```
+merge: merge 'feature/ui-enhancements' into 'dev'
+```
+
+---
+
+## Description
+
+- Keep it **short**, **clear**, and in the **imperative** mood.
+- **Do not** end with a period.
+- **Language**: use either English or French consistently.
+
+---
+
+## Body
+
+Provide additional context:
+
+- Reasons for the change, impacts
+- Separate paragraphs with a blank line
+
+---
+
+## Footer
+
+Used for:
+
+- Referencing issues: `Closes #42`
+- Signaling breaking changes: `BREAKING CHANGE: ...`
+
+---
+
+## Best Practices
+
+- Make **atomic commits**: one commit = one intent
+- Always **review and test** before committing
+- Avoid committing build files or temporary files (`node_modules`, `dist`, etc.)
+- Use **descriptive branches**:
+  - `feature/feature-name`
+  - `bugfix/bug-description`
+  - `chore/description`
+
+---
+
+## Useful Resources
+
+- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+- [Git Best Practices](https://sethrobertson.github.io/GitBestPractices/)

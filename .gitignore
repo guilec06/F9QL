@@ -1,3 +1,8 @@
+# Custom ignores for F9 Quickload
+
+# Discord sends your data into an archive named 'package' by default, let's not push that (size + sensitive data)
+package/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
