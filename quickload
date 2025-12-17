@@ -8,3 +8,5 @@ if __name__ == "__main__":
 
     print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
     repo = MessageRepo(Config.MESSAGES)
+    repo.filterAfterTimestamp("2025-01-01")
+    print(f"Messages after 2025-01-01: {len(repo.get_visible())}")
