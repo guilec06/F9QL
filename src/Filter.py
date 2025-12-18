@@ -119,7 +119,7 @@ class Filter:
         # HAS_EXCLAMATION = 53  # Excited messages!
         # IS_COMMAND = 55  # Bot commands you sent (starts with !)
 
-    def __new__(cls, type: 'Filter.Type', *args):
+    def __new__(cls, type: 'Filter.Type', *args) -> 'BaseFilter':
         """Factory pattern: instantiate the appropriate filter subclass"""
         if type in _FILTER_REGISTRY:
             return _FILTER_REGISTRY[type](*args)

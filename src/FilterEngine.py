@@ -8,7 +8,7 @@ class FilterGroup:
         OR = 2
         NOT = 3
 
-    def __init__(self, logic: 'FilterGroup.Logic' = None):
+    def __init__(self, logic: 'FilterGroup.Logic | None' = None):
         self.logic = logic or FilterGroup.Logic.AND
         self.filters: list[BaseFilter] = []
         self.subgroups: list[FilterGroup] = []
