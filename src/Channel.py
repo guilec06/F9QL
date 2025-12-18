@@ -14,7 +14,7 @@ class Channel:
 
     def __init__(self, id: str, type: 'Channel.Type', name: str = "", recipient: list[str] = [], guild_id: str = ""):
         self.type = type
-        self.id = int(id)
+        self.id = id
         
         self.name = name
         self.recipients = []
