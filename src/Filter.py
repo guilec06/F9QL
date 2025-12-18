@@ -143,6 +143,26 @@ class BaseFilter:
         """Override in subclasses to implement filter logic"""
         raise NotImplementedError
 
+    def __and__(self, other: 'BaseFilter'):
+        from src.FilterEngine import FilterGroup
+        combined = FilterGroup(self.data, FilterGroup.Logic.AND)
+        combined.filters.append(self)
+        combined.filters.append(other)
+        return combined
+
+    def __or__(self, other: 'BaseFilter'):
+        from src.FilterEngine import FilterGroup
+        combined = FilterGroup(self.data, FilterGroup.Logic.OR)
+        combined.filters.append(self)
+        combined.filters.append(other)
+        return combined
+    
+    def __invert__(self):
+        from src.FilterEngine import FilterGroup
+        negated = FilterGroup(self.data, FilterGroup.Logic.NOT)
+        negated.filters.append(self)
+        return negated
+
 
 # ============================================================================
 # TIME-BASED FILTERS

@@ -3,17 +3,16 @@
 from src.MessageRepo import MessageRepo
 from src.Config import Config
 from src.FilterEngine import FilterEngine
-from src.Filter import FilterType
+from src.Filter import *
 
 if __name__ == "__main__":
     Config.init(lang="fr")
 
     print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
     repo = MessageRepo(Config.MESSAGES)
-    engine = FilterEngine(repo.get_visible())
+    data = repo.get_visible()
+    engine = FilterEngine(data)
     
     # Combine filters to get what you want
-    engine.filters()\
-        .add_filter(FilterType.AFTER, "2025-01-01")\
-        .add_filter(FilterType.BEFORE, "2026-01-01")
+    engine.root = AfterFilter(data, "2025-01-01") & BeforeFilter(data, "2026-01-01")
     print(engine)

@@ -1,4 +1,4 @@
-import src.Filter as Filters
+from src.Filter import FilterType, BaseFilter, Filter
 from enum import Enum
 from typing import Set, Callable
 
@@ -6,20 +6,21 @@ class FilterGroup:
     class Logic(Enum):
         AND = 1
         OR = 2
+        NOT = 3
 
-    def __init__(self, data, logic: 'FilterGroup.Logic' = 'FilterGroup.Logic.AND'):
-        self.logic = logic
-        self.filters: list[Filters.BaseFilter] = []
+    def __init__(self, data, logic: 'FilterGroup.Logic' = None):
+        self.logic = logic or FilterGroup.Logic.AND
+        self.filters: list[BaseFilter] = []
         self.subgroups: list[FilterGroup] = []
         self.data = data
         self.indices: Set[int] = set()
 
-    def add_filter(self, type: Filters.Filter.Type, *args):
-        self.filters.append(Filters.Filter(type, self.data, *args))
+    def add_filter(self, type: FilterType, *args):
+        self.filters.append(Filter(type, self.data, *args))
         return self
 
-    def add_group(self, logic: 'FilterGroup.Logic' = 'FilterGroup.Logic.AND'):
-        self.subgroups.append(FilterGroup(self.data, logic))
+    def add_group(self, group: 'FilterGroup'):
+        self.subgroups.append(group)
         return self
 
     def set_logic(self, logic: 'FilterGroup.Logic'):
@@ -45,11 +46,41 @@ class FilterGroup:
             for indices in results[1:]:
                 res &= indices
             return res
-        else:
+        elif self.logic == FilterGroup.Logic.OR:
             res = set()
             for indices in results:
                 res |= indices
             return res
+        else:
+            res = set(range(len(self.data)))
+            for indices in results:
+                res -= indices
+            return res
+            
+
+    def __and__(self, other: 'FilterGroup | BaseFilter'):
+        combined = FilterGroup(self.data, FilterGroup.Logic.AND)
+        combined.subgroups.append(self)
+        if isinstance(other, FilterGroup):
+            combined.subgroups.append(other)
+        else:
+            combined.filters.append(other)
+        return combined
+
+    def __or__(self, other: 'FilterGroup | BaseFilter'):
+        combined = FilterGroup(self.data, FilterGroup.Logic.OR)
+        combined.subgroups.append(self)
+        if isinstance(other, FilterGroup):
+            combined.subgroups.append(other)
+        else:
+            combined.filters.append(other)
+        return combined
+    
+    def __invert__(self):
+        negated = FilterGroup(self.data, FilterGroup.Logic.NOT)
+        negated.subgroups.append(self)
+        return negated
+
 
 class FilterEngine:
     def __init__(self, data: list[dict]):
