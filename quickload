@@ -14,5 +14,5 @@ if __name__ == "__main__":
     engine = FilterEngine(data)
     
     # Combine filters to get what you want
-    engine.root = AfterFilter(data, "2025-01-01") & BeforeFilter(data, "2026-01-01")
+    engine.filters = AfterFilter("2025-01-01") & BeforeFilter("2026-01-01")
     print(engine)

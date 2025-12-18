@@ -36,6 +36,9 @@ def _parse_int(value):
 
 class Filter:
     class Type(Enum):
+        # Meta filters
+        ALWAYS_TRUE = 100  # Matches all messages
+        
         # Time-based
         AFTER = 1
         BEFORE = 2
@@ -116,50 +119,52 @@ class Filter:
         # HAS_EXCLAMATION = 53  # Excited messages!
         # IS_COMMAND = 55  # Bot commands you sent (starts with !)
 
-    def __new__(cls, type: 'Filter.Type', data, *args):
+    def __new__(cls, type: 'Filter.Type', *args):
         """Factory pattern: instantiate the appropriate filter subclass"""
         if type in _FILTER_REGISTRY:
-            return _FILTER_REGISTRY[type](data, *args)
+            return _FILTER_REGISTRY[type](*args)
         raise ValueError(f"Unknown filter type: {type}")
 
 
 class BaseFilter:
     """Base class for all filters"""
-    def __init__(self, data, *args):
-        # data = message repository reference
-        # args = filter criteria values (can be multiple for implicit OR logic)
-        self.data = data  # Messages list
+    def __init__(self, *args):
         self.values = args if args else ()  # Filter criteria
         self.matching_indices: Set[int] = set()
     
-    def compute_matches(self):
-        """Compute matching indices for all messages in self.data"""
+    def compute_matches(self, data):
+        """Compute matching indices for all messages in data"""
         self.matching_indices = set()
-        for i, message in enumerate(self.data):
+        for i, message in enumerate(data):
             if self._matches(message):
                 self.matching_indices.add(i)
+        return self.matching_indices
     
     def _matches(self, message: Message) -> bool:
         """Override in subclasses to implement filter logic"""
         raise NotImplementedError
 
     def __and__(self, other: 'BaseFilter'):
+        if isinstance(self, AlwaysTrueFilter):
+            return other
         from src.FilterEngine import FilterGroup
-        combined = FilterGroup(self.data, FilterGroup.Logic.AND)
+        combined = FilterGroup(FilterGroup.Logic.AND)
         combined.filters.append(self)
         combined.filters.append(other)
         return combined
 
     def __or__(self, other: 'BaseFilter'):
+        if isinstance(self, AlwaysTrueFilter):
+            return other
         from src.FilterEngine import FilterGroup
-        combined = FilterGroup(self.data, FilterGroup.Logic.OR)
+        combined = FilterGroup(FilterGroup.Logic.OR)
         combined.filters.append(self)
         combined.filters.append(other)
         return combined
     
     def __invert__(self):
         from src.FilterEngine import FilterGroup
-        negated = FilterGroup(self.data, FilterGroup.Logic.NOT)
+        negated = FilterGroup(FilterGroup.Logic.NOT)
         negated.filters.append(self)
         return negated
 
@@ -170,10 +175,9 @@ class BaseFilter:
 
 class AfterFilter(BaseFilter):
     """Messages after a specific timestamp"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_datetime(self.values[0]),) if self.values else ()
-        self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
         return message.timestamp > self.values[0]
@@ -181,10 +185,9 @@ class AfterFilter(BaseFilter):
 
 class BeforeFilter(BaseFilter):
     """Messages before a specific timestamp"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_datetime(self.values[0]),) if self.values else ()
-        self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
         return message.timestamp < self.values[0]
@@ -192,10 +195,9 @@ class BeforeFilter(BaseFilter):
 
 class BetweenFilter(BaseFilter):
     """Messages between two timestamps"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_datetime(v) for v in self.values) if self.values else ()
-        self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
         return self.values[0] <= message.timestamp <= self.values[1]
@@ -203,8 +205,8 @@ class BetweenFilter(BaseFilter):
 
 class OnDateFilter(BaseFilter):
     """Messages on one or more specific dates"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_date(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -214,8 +216,8 @@ class OnDateFilter(BaseFilter):
 
 class HourRangeFilter(BaseFilter):
     """Messages sent at certain hours"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_int(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -225,8 +227,8 @@ class HourRangeFilter(BaseFilter):
 
 class DayOfWeekFilter(BaseFilter):
     """Messages sent on one or more specific days of week"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_int(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -236,8 +238,8 @@ class DayOfWeekFilter(BaseFilter):
 
 class YearFilter(BaseFilter):
     """Messages from one or more specific years"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_int(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -247,8 +249,8 @@ class YearFilter(BaseFilter):
 
 class MonthFilter(BaseFilter):
     """Messages from one or more specific months"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_int(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -262,8 +264,8 @@ class MonthFilter(BaseFilter):
 
 class ChannelIdFilter(BaseFilter):
     """Messages in one or more specific channels by ID"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -272,8 +274,8 @@ class ChannelIdFilter(BaseFilter):
 
 class GuildIdFilter(BaseFilter):
     """Messages in one or more specific guilds by ID"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -282,8 +284,8 @@ class GuildIdFilter(BaseFilter):
 
 class ChannelNameFilter(BaseFilter):
     """Messages in one or more specific channels by name"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -292,8 +294,8 @@ class ChannelNameFilter(BaseFilter):
 
 class GuildNameFilter(BaseFilter):
     """Messages in one or more specific guilds by name"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -302,8 +304,8 @@ class GuildNameFilter(BaseFilter):
 
 class IsDmFilter(BaseFilter):
     """Direct messages (DMs)"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -312,8 +314,8 @@ class IsDmFilter(BaseFilter):
 
 class IsGroupDmFilter(BaseFilter):
     """Group direct messages"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -322,8 +324,8 @@ class IsGroupDmFilter(BaseFilter):
 
 class ToUserFilter(BaseFilter):
     """DMs to one or more specific users"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -336,8 +338,8 @@ class ToUserFilter(BaseFilter):
 
 class HasAttachmentFilter(BaseFilter):
     """Messages with at least one attachment"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -346,8 +348,8 @@ class HasAttachmentFilter(BaseFilter):
 
 class HasMoreThanAttachmentFilter(BaseFilter):
     """Messages with more than N attachments"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -357,8 +359,8 @@ class HasMoreThanAttachmentFilter(BaseFilter):
 
 class HasLessThanAttachmentFilter(BaseFilter):
     """Messages with fewer than N attachments"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -368,8 +370,8 @@ class HasLessThanAttachmentFilter(BaseFilter):
 
 class NoAttachmentFilter(BaseFilter):
     """Messages with no attachments"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -378,8 +380,8 @@ class NoAttachmentFilter(BaseFilter):
 
 class AttachmentTypeFilter(BaseFilter):
     """Messages with one or more specific attachment types"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -392,8 +394,8 @@ class AttachmentTypeFilter(BaseFilter):
 
 class ContainsTextFilter(BaseFilter):
     """Messages containing one or more specific text strings"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -403,8 +405,8 @@ class ContainsTextFilter(BaseFilter):
 
 class RegexMatchFilter(BaseFilter):
     """Messages matching a regex pattern"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -413,8 +415,8 @@ class RegexMatchFilter(BaseFilter):
 
 class StartsWithFilter(BaseFilter):
     """Messages starting with one or more specific text strings"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -423,8 +425,8 @@ class StartsWithFilter(BaseFilter):
 
 class EndsWithFilter(BaseFilter):
     """Messages ending with one or more specific text strings"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -433,8 +435,8 @@ class EndsWithFilter(BaseFilter):
 
 class ContainsUrlFilter(BaseFilter):
     """Messages containing URLs"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -443,8 +445,8 @@ class ContainsUrlFilter(BaseFilter):
 
 class ContainsEmojiFilter(BaseFilter):
     """Messages containing emoji"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -453,8 +455,8 @@ class ContainsEmojiFilter(BaseFilter):
 
 class ContainsCustomEmojiFilter(BaseFilter):
     """Messages containing custom emoji"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -463,8 +465,8 @@ class ContainsCustomEmojiFilter(BaseFilter):
 
 class IsReplyFilter(BaseFilter):
     """Messages that are replies to other messages"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -477,8 +479,8 @@ class IsReplyFilter(BaseFilter):
 
 class LengthGtFilter(BaseFilter):
     """Messages longer than N characters"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -488,8 +490,8 @@ class LengthGtFilter(BaseFilter):
 
 class LengthLtFilter(BaseFilter):
     """Messages shorter than N characters"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -499,8 +501,8 @@ class LengthLtFilter(BaseFilter):
 
 class LengthBetweenFilter(BaseFilter):
     """Messages with length between N and M characters"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = tuple(_parse_int(v) for v in self.values) if self.values else ()
         self.compute_matches()
     
@@ -510,8 +512,8 @@ class LengthBetweenFilter(BaseFilter):
 
 class WordCountGtFilter(BaseFilter):
     """Messages with more than N words"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -521,8 +523,8 @@ class WordCountGtFilter(BaseFilter):
 
 class WordCountLtFilter(BaseFilter):
     """Messages with fewer than N words"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -532,8 +534,8 @@ class WordCountLtFilter(BaseFilter):
 
 class IsShortMessageFilter(BaseFilter):
     """Very short messages (< 10 characters)"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -542,8 +544,8 @@ class IsShortMessageFilter(BaseFilter):
 
 class IsLongMessageFilter(BaseFilter):
     """Very long messages (> 500 characters)"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -556,8 +558,8 @@ class IsLongMessageFilter(BaseFilter):
 
 class ContainsCodeBlockFilter(BaseFilter):
     """Messages containing code blocks"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -570,8 +572,8 @@ class ContainsCodeBlockFilter(BaseFilter):
 
 class MentionsUserFilter(BaseFilter):
     """Messages mentioning one or more specific users"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -580,8 +582,8 @@ class MentionsUserFilter(BaseFilter):
 
 class MentionsRoleFilter(BaseFilter):
     """Messages mentioning one or more specific roles"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -590,8 +592,8 @@ class MentionsRoleFilter(BaseFilter):
 
 class MentionsEveryoneFilter(BaseFilter):
     """Messages using @everyone"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -600,8 +602,8 @@ class MentionsEveryoneFilter(BaseFilter):
 
 class MentionCountGtFilter(BaseFilter):
     """Messages mentioning more than N users/roles"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.values = (_parse_int(self.values[0]),) if self.values else ()
         self.compute_matches()
     
@@ -615,8 +617,8 @@ class MentionCountGtFilter(BaseFilter):
 
 class FirstMessageInChannelFilter(BaseFilter):
     """First message sent in a channel"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -625,8 +627,8 @@ class FirstMessageInChannelFilter(BaseFilter):
 
 class LastMessageInChannelFilter(BaseFilter):
     """Last message sent in a channel"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -639,8 +641,8 @@ class LastMessageInChannelFilter(BaseFilter):
 
 class AllCapsFilter(BaseFilter):
     """Messages in ALL CAPS"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -649,8 +651,8 @@ class AllCapsFilter(BaseFilter):
 
 class IsSingleEmojiFilter(BaseFilter):
     """Messages containing only a single emoji"""
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, *args):
+        super().__init__(*args)
         self.compute_matches()
     
     def _matches(self, message: Message) -> bool:
@@ -658,10 +660,22 @@ class IsSingleEmojiFilter(BaseFilter):
 
 
 # ============================================================================
-# REGISTRY: Map Filter.Type to filter classes
+# META FILTERS
+# ============================================================================
+
+class AlwaysTrueFilter(BaseFilter):
+    """Matches all messages (useful as baseline or for testing)"""
+    def __init__(self, *args):
+        super().__init__(*args)
+    
+    def _matches(self, message: Message) -> bool:
+        return True
+
+
 # ============================================================================
 
 _FILTER_REGISTRY = {
+    Filter.Type.ALWAYS_TRUE: AlwaysTrueFilter,
     Filter.Type.AFTER: AfterFilter,
     Filter.Type.BEFORE: BeforeFilter,
     Filter.Type.BETWEEN: BetweenFilter,
