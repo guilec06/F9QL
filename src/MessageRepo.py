@@ -76,5 +76,8 @@ class MessageRepo:
 
     def __repr__(self):
         return f"<MessageRepo - Message Repository containing {len(self.messages)} messages in {len(self.channels)} channels>"
+        
+    def __iter__(self):
+        return iter(self.get_visible())
 
 __all__ = ['Messagerepo', 'Message']
