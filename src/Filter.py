@@ -688,4 +688,4 @@ _FILTER_REGISTRY = {
     Filter.Type.IS_SINGLE_EMOJI: IsSingleEmojiFilter,
 }
 
-
+FilterType = Filter.Type
