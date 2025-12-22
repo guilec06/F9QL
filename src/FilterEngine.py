@@ -1,4 +1,4 @@
-from src.Filter import FilterType, BaseFilter, Filter, AlwaysTrueFilter
+from src.Filter import *
 from enum import Enum
 from typing import Set, Callable
 
@@ -10,11 +10,11 @@ class FilterGroup:
 
     def __init__(self, logic: 'FilterGroup.Logic | None' = None):
         self.logic = logic or FilterGroup.Logic.AND
-        self.filters: list[BaseFilter] = []
+        self.filters: list[Filter] = []
         self.subgroups: list[FilterGroup] = []
         self.indices: Set[int] = set()
 
-    def add_filter(self, type: FilterType, *args):
+    def add_filter(self, type: FILTERS, *args):
         self.filters.append(Filter(type, *args))
         return self
 
@@ -58,7 +58,7 @@ class FilterGroup:
             return res
             
 
-    def __and__(self, other: 'FilterGroup | BaseFilter'):
+    def __and__(self, other: 'FilterGroup | Filter'):
         combined = FilterGroup(FilterGroup.Logic.AND)
         combined.subgroups.append(self)
         if isinstance(other, FilterGroup):
@@ -67,7 +67,7 @@ class FilterGroup:
             combined.filters.append(other)
         return combined
 
-    def __or__(self, other: 'FilterGroup | BaseFilter'):
+    def __or__(self, other: 'FilterGroup | Filter'):
         combined = FilterGroup(FilterGroup.Logic.OR)
         combined.subgroups.append(self)
         if isinstance(other, FilterGroup):
@@ -85,7 +85,7 @@ class FilterGroup:
 class FilterEngine:
     def __init__(self, data: list[dict]):
         self.data = data
-        self.filters = AlwaysTrueFilter()
+        self.filters = Filter(FILTERS.AlwaysTrue)
     
     def get_matching_indices(self) -> set[int]:
         return self.filters.compute_matches(self.data)

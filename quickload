@@ -5,6 +5,9 @@ from src.Config import Config
 from src.FilterEngine import FilterEngine
 from src.Filter import *
 
+from src.utils.Encoder import QuickloadEncoder
+import json
+
 if __name__ == "__main__":
     Config.init(lang="fr")
 
@@ -14,5 +17,9 @@ if __name__ == "__main__":
     engine = FilterEngine(data)
     
     # Combine filters to get what you want
-    engine.filters = AfterFilter("2025-01-01") & BeforeFilter("2026-01-01")
+    engine.filters =\
+        Filter(FILTERS.After, "2025-01-01")\
+        & Filter(FILTERS.Before, "2026-01-01")\
+        & (Filter(FILTERS.Recipients, "425954265652002816"))
+    open("matching.json", "w").write(json.dumps(engine.get_messages(), cls=QuickloadEncoder))
     print(engine)
