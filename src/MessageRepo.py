@@ -5,14 +5,22 @@ from src.Config import Config
 from src.Channel import Channel
 from src.Spinner import Spinner
 
-
-class Message:
+class Message(json.JSONEncoder):
     def __init__(self, id: str, timestamp: str, content: str, attachments: str, channel: Channel):
         self.id = id
         self.content = content
         self.attachments = attachments
         self.timestamp = datetime.fromisoformat(timestamp)
         self.channel = channel
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'attachments': self.attachments,
+            'timestamp': self.timestamp.isoformat(),
+            'channel': self.channel.to_dict() if hasattr(self.channel, 'to_dict') else str(self.channel)
+        }
 
 class MessageRepo:
     def __init__(self, dir_path: str):
@@ -39,7 +47,7 @@ class MessageRepo:
                 message_obj = Message(
                     message.get("ID", ""),
                     message.get("Timestamp", ""),
-                    message.get("Content", ""),
+                    message.get("Contents", ""),
                     message.get("Attachments", ""),
                     channel_obj)
                 self.messages.append(message_obj)
