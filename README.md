@@ -17,6 +17,7 @@ The name **F9QL** stands for "**F9 Quickload**" - a reference to the classic gam
 ### Features
 
 - **Message Repository**: Parse and load all your Discord messages from exported data
+- **Advanced Filtering**: Query messages using a flexible, composable filter system
 - **Channel Analysis**: Analyze different channel types (DMs, Group DMs, Guild channels)
 - **Multi-language Support**: Supports different languages (English, French) for parsing Discord data exports
 - **Progress Indicators**: Visual spinner feedback during data loading
@@ -108,6 +109,30 @@ Config.init("your_data_folder", "en")  # or "fr" for French
 repo = MessageRepo(Config.MESSAGES)
 ```
 
+### Filtering Messages
+
+F9QL includes a powerful filtering engine that allows you to query your message history with precision.
+
+**Basic Filters:**
+- **Time-based**: Filter by date ranges (`After`, `Before`, `Between`)
+- **Content-based**: Filter by text content, regex patterns, etc.
+- **Metadata**: Filter by recipients (later: channel id, guild id etc...)
+
+**Advanced Logic:**
+Filters can be combined using standard logical operators:
+- `&` (AND)
+- `|` (OR)
+- `~` (NOT)
+
+Example:
+```python
+from src.Filter import Filter, FILTERS
+
+# Find messages from 2023 that are NOT from a specific user
+my_filter = Filter(FILTERS.After, "2023-01-01") & ~Filter(FILTERS.Recipients, "123456789")
+results = repo.apply_filter(my_filter)
+```
+
 ### Supported Languages
 
 - `en` - English
@@ -122,6 +147,8 @@ F9QL/
 ├── quickload           # Main entry point script
 ├── Config.py          # Configuration management
 ├── MessageRepo.py     # Message repository and parsing
+├── Filter.py          # Filter definitions and logic
+├── FilterEngine.py    # Filtering engine and composition
 ├── Channel.py         # Channel type definitions
 ├── Guild.py           # Guild (server) definitions
 ├── Checkpoint.py      # Data checkpointing utilities
