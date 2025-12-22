@@ -3,6 +3,9 @@
 # Discord sends your data into an archive named 'package' by default, let's not push that (size + sensitive data)
 package/
 
+# program can output data to this file
+matching.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
