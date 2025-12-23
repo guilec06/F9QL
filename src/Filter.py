@@ -69,6 +69,7 @@ class FILTERS(Enum):
     MessageLengthGt: FilterCallableSingle = lambda message, count: len(message.content) > count
     MessageLengthGt: FilterCallableSingle = lambda message, count: len(message.content) < count
     MessageLengthEq: FilterCallableSingle = lambda message, count: len(message.content) == count
+    MessageRegex: FilterCallableMultiple = lambda message, *regexes: all(_match_regex(message, regex) for regex in regexes)
 
     HasAttachments: FilterCallableNoarg = lambda message: len(message.attachments) != 0
     AttachmentCountGt: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) > count
