@@ -83,7 +83,7 @@ class MessageRepo:
         return self
 
     def __repr__(self):
-        return f"<MessageRepo - Message Repository containing {len(self.messages)} messages in {len(self.channels)} channels>"
+        return f"<MessageRepo containing {len(self.messages)} messages in {len(self.channels)} channels>"
         
     def __iter__(self):
         return iter(self.get_visible())
