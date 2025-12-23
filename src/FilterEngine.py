@@ -68,8 +68,12 @@ class FilterGroup:
             
 
     def __and__(self, other: 'FilterGroup | Filter'):
-        combined = FilterGroup(FilterGroup.Logic.AND)
-        combined.subgroups.append(self)
+        combined = None
+        if self.logic == FilterGroup.Logic.AND:
+            combined = self
+        else:
+            combined = FilterGroup(FilterGroup.Logic.AND)
+            combined.subgroups.append(self)
         if isinstance(other, FilterGroup):
             combined.subgroups.append(other)
         else:
@@ -77,8 +81,12 @@ class FilterGroup:
         return combined
 
     def __or__(self, other: 'FilterGroup | Filter'):
-        combined = FilterGroup(FilterGroup.Logic.OR)
-        combined.subgroups.append(self)
+        combined
+        if self.logic == FilterGroup.Logic.OR:
+            combined = self
+        else:
+            combined = FilterGroup(FilterGroup.Logic.OR)
+            combined.subgroups.append(self)
         if isinstance(other, FilterGroup):
             combined.subgroups.append(other)
         else:
