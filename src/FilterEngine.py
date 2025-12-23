@@ -8,6 +8,15 @@ class FilterGroup:
         OR = 2
         NOT = 3
 
+    def to_dict(self):
+        return {
+            "logic": self.logic.name,
+            "params": [
+                *(f for f in self.filters),
+                *(g for g in self.subgroups)
+            ]
+        }
+
     def __init__(self, logic: 'FilterGroup.Logic | None' = None):
         self.logic = logic or FilterGroup.Logic.AND
         self.filters: list[Filter] = []
@@ -83,6 +92,12 @@ class FilterGroup:
 
 
 class FilterEngine:
+    def to_dict(self):
+        return {
+            "filters": [f for f in self.filters] if isinstance(self.filters, Filter) else self.filters,
+            "matches": self.get_messages()
+        }
+
     def __init__(self, data: list[dict]):
         self.data = data
         self.filters = Filter(FILTERS.AlwaysTrue)

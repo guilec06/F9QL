@@ -79,6 +79,14 @@ class FILTERS(Enum):
     ContainsUrl: FilterCallableNoarg = lambda message: _match_regex(message, r'(?:https?://|www\.)[^\s<>]+')
 
 class Filter:
+    def to_dict(self):
+        return {
+            "type": next((k for k, v in FILTERS.__dict__.items() if v == self.func), "Unknown"),
+            "params": [
+                arg for arg in self.args
+            ]
+        }
+
     def __init__(self, type: FILTERS, *args):
         self.func: FILTERS = type
         self.args = (*args,)
