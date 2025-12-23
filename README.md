@@ -128,9 +128,12 @@ Example:
 ```python
 from src.Filter import Filter, FILTERS
 
+engine = FilterEngine(repo.messages)
+
 # Find messages from 2023 that are NOT from a specific user
 my_filter = Filter(FILTERS.After, "2023-01-01") & ~Filter(FILTERS.Recipients, "123456789")
-results = repo.apply_filter(my_filter)
+engine.filters = my_filter
+results = engine.get_messages()
 ```
 
 ### Supported Languages
