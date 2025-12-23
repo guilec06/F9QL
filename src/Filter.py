@@ -34,6 +34,12 @@ def _match_regex(message, pattern):
     # Implement cache and pre compiling ?
     return re.search(pattern, message.content) is not None
 
+def _unpack_args(join_symbol, args):
+    return f'{join_symbol}'.join(map(str, args))
+
+_USER_MENTION_PATTERN = r"<@\d{17,20}>"
+_CHANNEL_MENTION_PATTERN = r"<@\d{17,20}>"
+
 type FilterCallableNoarg = Callable[[], bool]
 type FilterCallableSingle = Callable[[Message, str], bool]
 type FilterCallableMultiple = Callable[[Message, list[str]], bool]
@@ -41,10 +47,35 @@ type FilterAny = FilterCallableNoarg | FilterCallableSingle | FilterCallableMult
 
 class FILTERS(Enum):
     AlwaysTrue: FilterCallableNoarg = lambda: True
-    After: FilterCallableSingle = lambda message, timestamp: message.timestamp > _parse_datetime(timestamp)
-    Before: FilterCallableSingle = lambda message, timestamp: message.timestamp < _parse_datetime(timestamp)
-    Between: FilterCallableMultiple = lambda message, *periods: _parse_datetime(periods[0]) < message.timestamp < _parse_datetime(periods[1])
-    Recipients: FilterCallableMultiple = lambda message, *recipients: all(r in message.channel.recipients for r in recipients)
+    SentAfter: FilterCallableSingle = lambda message, timestamp: message.timestamp > _parse_datetime(timestamp)
+    SentBefore: FilterCallableSingle = lambda message, timestamp: message.timestamp < _parse_datetime(timestamp)
+    SentBetween: FilterCallableMultiple = lambda message, *periods: _parse_datetime(periods[0]) < message.timestamp < _parse_datetime(periods[1])
+    ChannelRecipients: FilterCallableMultiple = lambda message, *recipients: all(r in message.channel.recipients for r in recipients)
+    MentionsUser: FilterCallableMultiple = lambda message, *users: _match_regex(message, rf"<@({_unpack_args('|', users)})>")
+    HasUserMention: FilterCallableNoarg = lambda message: _match_regex(message, _USER_MENTION_PATTERN)
+    HasUserMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) > count
+    HasUserMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) < count
+    HasUserMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) == count
+    MentionsChannel: FilterCallableMultiple = lambda message, *channels: _match_regex(message, rf"<#{_unpack_args('|', channels)}>")
+    HasChannemMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) > count
+    HasChannemMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) < count
+    HasChannemMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) == count
+    HasChannelMention: FilterCallableNoarg = lambda message: _match_regex(message, _CHANNEL_MENTION_PATTERN)
+    IsDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.DM
+    IsGroupDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.GROUP_DM
+    IsGuildDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.GUILD
+
+    MessageContains: FilterCallableMultiple = lambda message, *search: _match_regex(message, _unpack_args('|', search))
+    MessageLengthGt: FilterCallableSingle = lambda message, count: len(message.content) > count
+    MessageLengthGt: FilterCallableSingle = lambda message, count: len(message.content) < count
+    MessageLengthEq: FilterCallableSingle = lambda message, count: len(message.content) == count
+
+    HasAttachments: FilterCallableNoarg = lambda message: len(message.attachments) != 0
+    AttachmentCountGt: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) > count
+    AttachmentCountLt: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) < count
+    AttachmentCountEq: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) == count
+
+    ContainsUrl: FilterCallableNoarg = lambda message: _match_regex(message, r'(?:https?://|www\.)[^\s<>]+')
 
 class Filter:
     def __init__(self, type: FILTERS, *args):
