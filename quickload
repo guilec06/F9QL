@@ -18,9 +18,6 @@ if __name__ == "__main__":
 
     # Combine filters to get what you want
     engine.filters =\
-        Filter(FILTERS.SentAfter, "2025-01-01")\
-        & Filter(FILTERS.SentBefore, "2026-01-01")\
-        & Filter(FILTERS.IsDM)\
-        & Filter(FILTERS.MessageContains, "amongus")
+        Filter(FILTERS.SentBetween, "2025-01-01", "2026-01-01")
     open("matching.json", "w").write(json.dumps(engine, cls=QuickloadEncoder))
     print(engine)

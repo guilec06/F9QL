@@ -37,8 +37,8 @@ def _match_regex(message, pattern):
 def _unpack_args(join_symbol, args):
     return f'{join_symbol}'.join(map(str, args))
 
-_USER_MENTION_PATTERN = r"<@\d{17,20}>"
-_CHANNEL_MENTION_PATTERN = r"<@\d{17,20}>"
+USER_MENTION_PATTERN = r"<@\d{17,20}>"
+CHANNEL_MENTION_PATTERN = r"<@\d{17,20}>"
 
 type FilterCallableNoarg = Callable[[], bool]
 type FilterCallableSingle = Callable[[Message, str], bool]
@@ -52,15 +52,15 @@ class FILTERS(Enum):
     SentBetween: FilterCallableMultiple = lambda message, *periods: _parse_datetime(periods[0]) < message.timestamp < _parse_datetime(periods[1])
     ChannelRecipients: FilterCallableMultiple = lambda message, *recipients: all(r in message.channel.recipients for r in recipients)
     MentionsUser: FilterCallableMultiple = lambda message, *users: _match_regex(message, rf"<@({_unpack_args('|', users)})>")
-    HasUserMention: FilterCallableNoarg = lambda message: _match_regex(message, _USER_MENTION_PATTERN)
-    HasUserMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) > count
-    HasUserMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) < count
-    HasUserMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(_USER_MENTION_PATTERN, message.content)) == count
+    HasUserMention: FilterCallableNoarg = lambda message: _match_regex(message, USER_MENTION_PATTERN)
+    HasUserMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(USER_MENTION_PATTERN, message.content)) > count
+    HasUserMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(USER_MENTION_PATTERN, message.content)) < count
+    HasUserMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(USER_MENTION_PATTERN, message.content)) == count
     MentionsChannel: FilterCallableMultiple = lambda message, *channels: _match_regex(message, rf"<#{_unpack_args('|', channels)}>")
-    HasChannemMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) > count
-    HasChannemMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) < count
-    HasChannemMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(_CHANNEL_MENTION_PATTERN, message.content)) == count
-    HasChannelMention: FilterCallableNoarg = lambda message: _match_regex(message, _CHANNEL_MENTION_PATTERN)
+    HasChannemMentionCountGt: FilterCallableSingle = lambda message, count: len(re.match(CHANNEL_MENTION_PATTERN, message.content)) > count
+    HasChannemMentionCoungLt: FilterCallableSingle = lambda message, count: len(re.match(CHANNEL_MENTION_PATTERN, message.content)) < count
+    HasChannemMentionCoungEq: FilterCallableSingle = lambda message, count: len(re.match(CHANNEL_MENTION_PATTERN, message.content)) == count
+    HasChannelMention: FilterCallableNoarg = lambda message: _match_regex(message, CHANNEL_MENTION_PATTERN)
     IsDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.DM
     IsGroupDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.GROUP_DM
     IsGuildDM: FilterCallableNoarg = lambda message: message.channel.type == Channel.Type.GUILD
