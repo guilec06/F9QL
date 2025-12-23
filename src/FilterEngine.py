@@ -102,7 +102,7 @@ class FilterGroup:
 class FilterEngine:
     def to_dict(self):
         return {
-            "filters": [f for f in self.filters] if isinstance(self.filters, Filter) else self.filters,
+            "filters": self.filters,
             "matches": self.get_messages()
         }
 
