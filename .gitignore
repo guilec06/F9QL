@@ -4,7 +4,7 @@
 package/
 
 # program can output data to this file
-matching.json
+matching*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
