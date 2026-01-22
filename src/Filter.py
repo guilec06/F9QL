@@ -72,9 +72,9 @@ class FILTERS(Enum):
     MessageRegex: FilterCallableMultiple = lambda message, *regexes: all(_match_regex(message, regex) for regex in regexes)
 
     HasAttachments: FilterCallableNoarg = lambda message: len(message.attachments) != 0
-    AttachmentCountGt: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) > count
-    AttachmentCountLt: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) < count
-    AttachmentCountEq: FilterCallableSingle = lambda message, count: len(message.attachments.split(' ')) == count
+    AttachmentCountGt: FilterCallableSingle = lambda message, count: len(message.attachments.split()) > count
+    AttachmentCountLt: FilterCallableSingle = lambda message, count: len(message.attachments.split()) < count
+    AttachmentCountEq: FilterCallableSingle = lambda message, count: len(message.attachments.split()) == count
 
     ContainsUrl: FilterCallableNoarg = lambda message: _match_regex(message, r'(?:https?://|www\.)[^\s<>]+')
 
