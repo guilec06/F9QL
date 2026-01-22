@@ -21,6 +21,9 @@ class Message(json.JSONEncoder):
             'timestamp': self.timestamp.isoformat(),
             'channel': self.channel.to_dict() if hasattr(self.channel, 'to_dict') else str(self.channel)
         }
+    
+    def __repr__(self):
+        return f'<Message id={self.id} sent in channel_id={self.channel.id}>'
 
 class MessageRepo:
     def __init__(self, dir_path: str):
@@ -51,41 +54,15 @@ class MessageRepo:
                     message.get("Attachments", ""),
                     channel_obj)
                 self.messages.append(message_obj)
-        spinner.stop(str(self))
+        spinner.stop("  ")
 
-        self.indices = list(range(len(self.messages)))
-        self._filters = []
-
-    def get_visible(self, limit=None):
-        indices = self.indices[:limit] if limit else self.indices
-        return [self.messages[i] for i in indices]
-    
-    def filter(self, predicate, label=None):
-        self.indices = [
-            msg for msg in self.indices
-            if predicate(self.messages[msg])
-        ]
-        if label:
-            self._filters.append(label)
-        return self
-
-    def filterAfterTimestamp(self, timestamp):
-        self.filter(lambda msg: msg.timestamp > datetime.fromisoformat(timestamp), {"after": timestamp})
-        return self
-
-    def filterBeforeTimestamp(self, timestamp):
-        self.filter(lambda msg: msg.timestamp < datetime.fromisoformat(timestamp), {"before": timestamp})
-        return self
-
-    def reset(self):
-        self.indices = list(range(len(self.messages)))
-        self._filters = []
-        return self
+    def get_messages(self):
+        return self.messages.copy()
 
     def __repr__(self):
         return f"<MessageRepo containing {len(self.messages)} messages in {len(self.channels)} channels>"
         
     def __iter__(self):
-        return iter(self.get_visible())
+        return iter(self.get_messages())
 
-__all__ = ['Messagerepo', 'Message']
+__all__ = ['MessageRepo', 'Message']
