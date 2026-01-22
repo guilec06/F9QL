@@ -38,7 +38,7 @@ class Channel:
             self.recipients = [r for r in recipient if r != Config.USER_ID]
         elif type == Channel.Type.GROUP_DM:
             self.recipients = [r for r in recipient if r != Config.USER_ID]
-            self.namle = name
+            self.name = name
         elif type == Channel.Type.GUILD:
             self.name = name
             self.guild_id = guild_id
