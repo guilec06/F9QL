@@ -18,6 +18,7 @@ The name **F9QL** stands for "**F9 Quickload**" - a reference to the classic gam
 
 - **Message Repository**: Parse and load all your Discord messages from exported data
 - **Advanced Filtering**: Query messages using a flexible, composable filter system
+- **Natural Language Statistics**: Query your data using plain English (e.g., "average number of messages per month")
 - **Channel Analysis**: Analyze different channel types (DMs, Group DMs, Guild channels)
 - **Multi-language Support**: Supports different languages (English, French) for parsing Discord data exports
 - **Progress Indicators**: Visual spinner feedback during data loading
@@ -137,6 +138,51 @@ engine.filters = my_filter
 results = engine.get_messages()
 ```
 
+### Natural Language Statistics
+
+F9QL includes a natural language parser that lets you query statistics using plain English:
+
+```python
+import src.Stat as s
+
+# Create an environment with your data
+env = {"default": repo.get_messages()}
+
+# Add filtered subsets
+env["2024"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2024-01-01", "2025-01-01"))
+env["2025"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2025-01-01", "2026-01-01"))
+
+# Query using natural language
+query = s.Parser("the average number of messages per month in #2024").parse()
+result = query.eval(env)
+```
+
+**Supported Queries:**
+
+| Layer | Pattern | Example |
+|-------|---------|---------|
+| Layer 0 | `number of words/messages/attachments/mentions` | "number of messages" |
+| Layer 0 | `number of characters ?` | "number of characters abc" |
+| Layer 0 | `length of messages` | "length of messages" |
+| Layer 1 | `average {layer0}` | "average number of words" |
+| Layer 1 | `total {layer0}` | "total number of attachments" |
+| Layer 2 | `ratio of {layer1} over {layer1}` | "ratio of total messages over total words" |
+| Layer 3 | `{layer2} as percentage` | "... as percentage" |
+
+**Modifiers:**
+
+- `in #variable` - Use a specific data source from the environment
+- `per year/month/week/day/hour/minute` - Group data by time period
+- `per guild/channel` - Group data by server or channel
+
+**Example Queries:**
+```
+"total number of messages"
+"average number of words per month"
+"total number of attachments in #2024"
+"ratio of the total number of messages over the total number of words as percentage"
+```
+
 ### Supported Languages
 
 - `en` - English
@@ -156,7 +202,7 @@ F9QL/
 │   ├── FilterEngine.py# Filtering engine and composition
 │   ├── Channel.py     # Channel type definitions
 │   ├── Guild.py       # Guild (server) definitions
-│   ├── Stat.py        # Statistics and analytics
+│   ├── Stat.py        # Natural language statistics parser
 │   ├── Spinner.py     # Loading animation
 │   └── utils/         # Utility modules
 ├── locale/            # Language-specific folder mappings
