@@ -1,6 +1,6 @@
 from src.Filter import *
 from enum import Enum
-from typing import Set, Callable
+from typing import Set, Callable, List, Dict
 
 class FilterGroup:
     class Logic(Enum):
@@ -129,6 +129,10 @@ class FilterEngine:
             sorted_indices = sorted_indices[:limit]
         
         return [self.data[i] for i in sorted_indices]
+
+    def filter_and_get_results(self, filters: Filter | FilterGroup) -> List[Dict]:
+        self.filters = filters
+        return self.get_messages()
     
     def __repr__(self):
         return f"<FilterEngine matching {len(self.get_matching_indices())} elements>"
