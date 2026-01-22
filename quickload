@@ -1,9 +1,10 @@
-#/usr/bin/env python3
+#/usr/bin/python3
 
 from src.MessageRepo import MessageRepo
 from src.Config import Config
 from src.FilterEngine import FilterEngine
 from src.Filter import *
+import src.Stat as s
 
 from src.utils.Encoder import QuickloadEncoder
 import json
@@ -13,11 +14,14 @@ if __name__ == "__main__":
 
     print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
     repo = MessageRepo(Config.MESSAGES)
-    data = repo.get_visible()
+    data = repo.get_messages()
     engine = FilterEngine(data)
+    env: s.SourceEnvironment = {}
 
     # Combine filters to get what you want
-    engine.filters =\
-        Filter(FILTERS.SentBetween, "2025-01-01", "2026-01-01")
-    open("matching.json", "w").write(json.dumps(engine, cls=QuickloadEncoder))
-    print(engine)
+    env["default"] = data
+    env["seta"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2025-01-01", "2026-01-01"))
+    env["setb"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2024-01-01", "2025-01-01"))
+    a = s.Parser("the total number of attachments in #seta").parse()
+    print(a.eval(env))
+    # open("matching.json", "w").write(json.dumps(engine, cls=QuickloadEncoder, ensure_ascii=False))
