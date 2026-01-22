@@ -55,4 +55,4 @@ for file_name in files:
 for value in output.values():
     value.sort()
 
-print(json.dumps(output))
+print(json.dumps(output, ensure_ascii=False))
