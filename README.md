@@ -99,8 +99,8 @@ python3 quickload
 You can customize the data source and language in the `quickload` script:
 
 ```python
-from MessageRepo import MessageRepo
-from Config import Config
+from src.MessageRepo import MessageRepo
+from src.Config import Config
 
 # Initialize with custom path and language
 Config.init("your_data_folder", "en")  # or "fr" for French
@@ -127,11 +127,12 @@ Filters can be combined using standard logical operators:
 Example:
 ```python
 from src.Filter import Filter, FILTERS
+from src.FilterEngine import FilterEngine
 
-engine = FilterEngine(repo.messages)
+engine = FilterEngine(repo.get_messages())
 
 # Find messages from 2023 that are NOT from a specific user
-my_filter = Filter(FILTERS.After, "2023-01-01") & ~Filter(FILTERS.Recipients, "123456789")
+my_filter = Filter(FILTERS.SentAfter, "2023-01-01") & ~Filter(FILTERS.ChannelRecipients, "123456789")
 engine.filters = my_filter
 results = engine.get_messages()
 ```
@@ -148,14 +149,16 @@ The language parameter uses ISO 639-1 codes and corresponds to the language your
 ```
 F9QL/
 ├── quickload           # Main entry point script
-├── Config.py          # Configuration management
-├── MessageRepo.py     # Message repository and parsing
-├── Filter.py          # Filter definitions and logic
-├── FilterEngine.py    # Filtering engine and composition
-├── Channel.py         # Channel type definitions
-├── Guild.py           # Guild (server) definitions
-├── Checkpoint.py      # Data checkpointing utilities
-├── Spinner.py         # Loading animation
+├── src/               # Source code directory
+│   ├── Config.py      # Configuration management
+│   ├── MessageRepo.py # Message repository and parsing
+│   ├── Filter.py      # Filter definitions and logic
+│   ├── FilterEngine.py# Filtering engine and composition
+│   ├── Channel.py     # Channel type definitions
+│   ├── Guild.py       # Guild (server) definitions
+│   ├── Stat.py        # Statistics and analytics
+│   ├── Spinner.py     # Loading animation
+│   └── utils/         # Utility modules
 ├── locale/            # Language-specific folder mappings
 │   ├── en.json
 │   └── fr.json
