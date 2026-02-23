@@ -2,6 +2,7 @@
 
 import os
 import json
+from typing import List
 
 class ReadOnlyMeta(type):
     """Metaclass to make class variables read-only after initialization"""
@@ -25,9 +26,10 @@ class Config(metaclass=ReadOnlyMeta):
     MESSAGES = ""
     ADS = ""
     GUILDS = ""
+    MODE = "cli"
 
     @staticmethod
-    def init(root: str = "package", lang :str = "en"):
+    def init(root: str = "package", lang :str = "en", mode: str = "cli"):
         """Initialize the environment for the program
 
         Args:
@@ -38,6 +40,9 @@ class Config(metaclass=ReadOnlyMeta):
         
         Config.ROOT = os.path.realpath(root)
         Config.LANG = lang
+
+        if mode != "cli" and mode in ("tui", "inline"):
+            Config.MODE = mode
 
         locale_file = json.loads(open(f"locale/{lang}.json", "r").read())
 
