@@ -26,7 +26,7 @@ class Spinner:
         self.spinning = False
         if self.thread:
             self.thread.join()
-        sys.stdout.write(f'\r{final_message}\n')
+        sys.stdout.write(f'\r{final_message}\r')
         sys.stdout.flush()
 
 __all__ = ['Spinner']
