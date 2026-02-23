@@ -33,8 +33,9 @@ class Config(metaclass=ReadOnlyMeta):
         """Initialize the environment for the program
 
         Args:
-            root (str): The root where the discord files are located
-            lang (str): The ISO 639-1 locale code of the language the archive is in in order to load the proper files
+            root (str): The root where the discord files are located (defaults to "package")
+            lang (str): The ISO 639-1 locale code of the language the archive is in in order to load the proper files (defaults to "en")
+            mode (str): The mode the program will run as ("cli", "tui" or "inline", defaults to "cli")
         """
         Config._initializing = True
         
