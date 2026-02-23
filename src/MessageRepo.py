@@ -26,9 +26,10 @@ class Message(json.JSONEncoder):
         return f'<Message id={self.id} sent in channel_id={self.channel.id}>'
 
 class MessageRepo:
-    def __init__(self, dir_path: str):
-        spinner = Spinner("")
-        spinner.start()
+    def __init__(self, dir_path: str, use_spinner: bool = True):
+        if use_spinner:
+            spinner = Spinner("")
+            spinner.start()
         self.messages = []
         self.channels = []
         
@@ -54,10 +55,17 @@ class MessageRepo:
                     message.get("Attachments", ""),
                     channel_obj)
                 self.messages.append(message_obj)
-        spinner.stop("  ")
+        if use_spinner:
+            spinner.stop("  ")
 
     def get_messages(self):
         return self.messages.copy()
+
+    def get_n_messages(self):
+        return len(self.messages)
+
+    def get_n_channels(self):
+        return len(self.channels)
 
     def __repr__(self):
         return f"<MessageRepo containing {len(self.messages)} messages in {len(self.channels)} channels>"
