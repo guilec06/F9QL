@@ -132,7 +132,7 @@ from src.FilterEngine import FilterEngine
 
 engine = FilterEngine(repo.get_messages())
 
-# Find messages from 2023 that are NOT from a specific user
+# Find messages after 2023 that are NOT to a specific user
 my_filter = Filter(FILTERS.SentAfter, "2023-01-01") & ~Filter(FILTERS.ChannelRecipients, "123456789")
 engine.filters = my_filter
 results = engine.get_messages()
