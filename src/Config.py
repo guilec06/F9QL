@@ -2,7 +2,7 @@
 
 import os
 import json
-from typing import List
+from typing import List, Literal
 
 class ReadOnlyMeta(type):
     """Metaclass to make class variables read-only after initialization"""
@@ -29,7 +29,7 @@ class Config(metaclass=ReadOnlyMeta):
     MODE = "cli"
 
     @staticmethod
-    def init(root: str = "package", lang :str = "en", mode: str = "cli"):
+    def init(root: str = "package", lang :str = "en", mode: Literal["cli", "tui", "inline"] = "cli"):
         """Initialize the environment for the program
 
         Args:
