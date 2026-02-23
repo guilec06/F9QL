@@ -5,23 +5,37 @@ from src.Config import Config
 from src.FilterEngine import FilterEngine
 from src.Filter import *
 import src.Stat as s
+import src.CLI.CLI as cli
+import src.TUI as tui
+import src.Inline as inline
 
 from src.utils.Encoder import QuickloadEncoder
 import json
+from sys import argv
+
+# if __name__ == "__main__":
+#     Config.init(lang="fr")
+
+#     print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
+#     repo = MessageRepo(Config.MESSAGES)
+#     data = repo.get_messages()
+#     engine = FilterEngine(data)
+#     env: s.SourceEnvironment = {}
+
+#     # Combine filters to get what you want
+#     env["default"] = data
+#     a = s.Parser("the total number of messages").parse()
+#     print(a.eval(env))
+#     print(s.Parser("The average number of messages per day").parse().eval(env))
+#     # open("matching.json", "w").write(json.dumps(engine, cls=QuickloadEncoder, ensure_ascii=False))
 
 if __name__ == "__main__":
-    Config.init(lang="fr")
+    mode = "inline"
+    if "--cli" in argv:
+        mode = "cli"
+    elif "--tui" in argv:
+        mode = "tui"
+    Config.init(lang="fr", mode=mode)
 
-    print(f"Loading user data for user '{Config.USER_DATA["global_name"]}' (id: {Config.USER_ID})")
-    repo = MessageRepo(Config.MESSAGES)
-    data = repo.get_messages()
-    engine = FilterEngine(data)
-    env: s.SourceEnvironment = {}
-
-    # Combine filters to get what you want
-    env["default"] = data
-    env["seta"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2025-01-01", "2026-01-01"))
-    env["setb"] = engine.filter_and_get_results(Filter(FILTERS.SentBetween, "2024-01-01", "2025-01-01"))
-    a = s.Parser("the total number of attachments in #seta").parse()
-    print(a.eval(env))
-    # open("matching.json", "w").write(json.dumps(engine, cls=QuickloadEncoder, ensure_ascii=False))
+    if Config.MODE == "cli":
+        cli.start()
